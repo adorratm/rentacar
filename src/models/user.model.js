@@ -1,5 +1,13 @@
+/**
+ * @file user.model.js
+ * @description This file is responsible for the user model.
+ * @author https://github.com/adorratm
+ */
+
+// Importing the mongoose
 const mongoose = require("mongoose");
 
+// Creating the user schema
 const userSchema = new mongoose.Schema({
     first_name: {
         type: String,
@@ -28,6 +36,8 @@ const userSchema = new mongoose.Schema({
     },
 }, { collection: "users", timestamps: true });
 
+// Creating the user model
 const user = mongoose.model("users", userSchema);
 
+// Exporting the model
 module.exports = user;
