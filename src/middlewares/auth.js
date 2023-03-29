@@ -7,6 +7,9 @@
 // Importing the jwt
 const jwt = require('jsonwebtoken');
 
+// Importing the APIError
+const APIError = require('../utils/errors');
+
 // Creating the token
 const createToken = async (user, res) => {
 
@@ -32,7 +35,30 @@ const createToken = async (user, res) => {
     });
 }
 
+// Checking the token
+const tokenCheck = async (req, res, next) => {
+
+    // Getting the token
+    const token = req.headers["authorization"] && req.headers["authorization"].startsWith('Bearer');
+
+    // Checking if the token exists
+    if (!token) {
+        throw new APIError('Access denied. No token provided.', 401);
+    }
+
+    // Checking if the token is valid
+    try {
+        const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        throw new APIError('Access denied. No token provided.', 401);
+    }
+    next();
+}
+
 // Exporting the module
 module.exports = {
-    createToken
+    createToken,
+    tokenCheck
 }
