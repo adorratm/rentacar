@@ -43,15 +43,26 @@ const helmet = require('helmet');
 // Hpp
 const hpp = require('hpp');
 
+// Api Rate Limiter
+const apiLimiter = require("./src/middlewares/rateLimit");
 
+// Path
+const path = require('path');
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+
+app.use("/api", apiLimiter)
+
 app.use(mongoSanitize({
     replaceWith: '_'
 }));
+
+// Static Files
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(__dirname));
 
 app.use(helmet());
 app.use(hpp());
