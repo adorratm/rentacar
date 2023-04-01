@@ -7,6 +7,9 @@
 // Importing the jwt
 const jwt = require('jsonwebtoken');
 
+// Importing the user model
+const user = require('../models/user.model');
+
 // Importing the APIError
 const APIError = require('../utils/errors');
 
@@ -39,22 +42,34 @@ const createToken = async (user, res) => {
 const tokenCheck = async (req, res, next) => {
 
     // Getting the token
-    const token = req.headers["authorization"] && req.headers["authorization"].startsWith('Bearer');
+    const token = req.headers.authorization && req.headers.authorization.startsWith('Bearer ') && req.headers.authorization.split(' ')[1];
 
     // Checking if the token exists
     if (!token) {
         throw new APIError('Access denied. No token provided.', 401);
     }
-
     // Checking if the token is valid
-    try {
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-        req.user = decoded;
+    await jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, decoded) => {
+        
+        // If the token is invalid, throw an error
+        if (err) {
+            throw new APIError('Access denied. Api token is unauthorized.', 401);
+        }
+
+        // Getting the user info
+        const userInfo = await user.findById(decoded.sub).select("_id first_name last_name email");
+
+        // Checking if the user exists
+        if (!userInfo) {
+            throw new APIError('Access denied. User not found.', 401);
+        }
+
+        // Setting the user info
+        req.user = userInfo;
+        
+        // Calling the next middleware
         next();
-    } catch (error) {
-        throw new APIError('Access denied. No token provided.', 401);
-    }
-    next();
+    });
 }
 
 // Exporting the module

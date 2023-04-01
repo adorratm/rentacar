@@ -76,9 +76,9 @@ const register = async (req, res) => {
 }
 
 // Getting the user
-const userData = async (req, res) => {
-
+const me = async (req, res) => {
+    return new Response(req.user).success(res);
 }
 
 // Exporting the methods
-module.exports = { login, register, userData }
+module.exports = { login, register, me }
