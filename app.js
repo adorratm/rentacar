@@ -37,6 +37,14 @@ const corsOptions = require('./src/helpers/corsOptions');
 // Express Mongo Sanitize
 const mongoSanitize = require('express-mongo-sanitize');
 
+// Helmet
+const helmet = require('helmet');
+
+// Hpp
+const hpp = require('hpp');
+
+
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +52,9 @@ app.use(cors(corsOptions));
 app.use(mongoSanitize({
     replaceWith: '_'
 }));
+
+app.use(helmet());
+app.use(hpp());
 
 // Routes
 app.use("/api", router);

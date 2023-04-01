@@ -14,6 +14,8 @@ const errorHandlerMiddleware = (err, req, res, next) => {
         return res.status(err.statusCode || 400).send({ success: false, message: err.message });
     }
 
+    
+
     // If the error is not an instance of APIError, convert it.
     return res.status(500).send({ success: false, message: err.message });
 }

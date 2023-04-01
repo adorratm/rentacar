@@ -1,3 +1,9 @@
+/**
+ * @file corsOptions.js
+ * @description This file is responsible for the cors options.
+ * @author https://github.com/adorratm
+ */
+
 // This file is used to configure the CORS options for the server
 const whiteList = ['http://localhost:3000'];
 
