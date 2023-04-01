@@ -7,27 +7,20 @@
 // Express Async Errors is a middleware that wraps the route handlers and makes sure any errors they throw are passed to the express error handler.
 require("express-async-errors");
 
+// Express
+const express = require('express');
+
+// Express App
+const app = express();
+
 // Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env.
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 
 // DB Connection 
 require('./src/db/dbConnection');
 
-// Cors
-const cors = require('cors');
-
-// Cors Options
-const corsOptions = require('./src/helpers/corsOptions');
-
-// Express
-const express = require('express');
-
 // Port
 const port = process.env.PORT || 5000;
-
-// Express App
-const app = express();
 
 // Routers
 const router = require('./src/routers');
@@ -35,10 +28,22 @@ const router = require('./src/routers');
 // Error Handler
 const errorHandlerMiddleware = require('./src/middlewares/errorHandler');
 
+// Cors
+const cors = require('cors');
+
+// Cors Options
+const corsOptions = require('./src/helpers/corsOptions');
+
+// Express Mongo Sanitize
+const mongoSanitize = require('express-mongo-sanitize');
+
 // Middlewares
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors(corsOptions));
+app.use(mongoSanitize({
+    replaceWith: '_'
+}));
 
 // Routes
 app.use("/api", router);
