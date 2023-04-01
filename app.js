@@ -14,6 +14,12 @@ dotenv.config();
 // DB Connection 
 require('./src/db/dbConnection');
 
+// Cors
+const cors = require('cors');
+
+// Cors Options
+const corsOptions = require('./src/helpers/corsOptions');
+
 // Express
 const express = require('express');
 
@@ -30,6 +36,7 @@ const router = require('./src/routers');
 const errorHandlerMiddleware = require('./src/middlewares/errorHandler');
 
 // Middlewares
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
