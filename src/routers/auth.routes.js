@@ -8,7 +8,7 @@
 const router = require('express').Router();
 
 // Importing the auth controller
-const { login, register, me } = require('../controllers/auth.controller');
+const { login, register, me, forgotPassword } = require('../controllers/auth.controller');
 
 // Importing the auth validation
 const authValidation = require('../middlewares/validations/auth.validation');
@@ -26,6 +26,9 @@ router.post('/register', authValidation.register, register);
 
 // Getting the user data
 router.get('/me', tokenCheck, me);
+
+// Forgot password
+router.post('/forgot-password', forgotPassword);
 
 // Exporting the routes
 module.exports = router;

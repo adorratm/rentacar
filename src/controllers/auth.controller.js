@@ -19,6 +19,13 @@ const Response = require('../utils/response');
 // Importing the auth middleware
 const { createToken } = require('../middlewares/auth');
 
+// Importing the crypto module
+const crypto = require("crypto");
+
+// Importing the sendMail function
+const sendEmail = require('../utils/sendMail');
+const moment = require('moment/moment');
+
 // Login Method
 const login = async (req, res) => {
 
@@ -80,5 +87,39 @@ const me = async (req, res) => {
     return new Response(req.user).success(res);
 }
 
+// Forgot Password Method
+const forgotPassword = async (req, res) => {
+    // Getting the email from the request body
+    const { email } = req.body;
+
+    // Checking if the user exists
+    const userCheck = await user.findOne({ email }).select("first_name last_name email");
+
+    // If the user doesn't exist, throw an error
+    if (!userCheck) {
+        throw new APIError("User doesn't exist.", 400);
+    }
+
+    // Creating the reset code
+    const resetCode = crypto.randomBytes(3).toString("hex");
+
+    // Creating the reset time
+    const resetTime = moment(new Date()).add(15, "minute").format("YYYY-MM-DD HH:mm:ss");
+
+    // Sending the email
+    await sendEmail({
+        from: process.env.EMAIL_USER,
+        to: userCheck.email,
+        subject: "Password Reset",
+        html: `Your password reset code is <b>${resetCode}</b>`,
+    })
+
+    // Updating the user
+    await user.updateOne({ email }, { reset: { code: resetCode, time: resetTime } });
+
+    // Returning the response
+    return new Response(true, "Password reset code sent successfully.").success(res);
+}
+
 // Exporting the methods
-module.exports = { login, register, me }
+module.exports = { login, register, me, forgotPassword }

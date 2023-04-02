@@ -34,6 +34,18 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    reset: {
+        code: {
+            type: String,
+            default: null,
+            trim: true
+        },
+        time: {
+            type: Date,
+            default: null,
+            trim: true
+        }
+    }
 }, { collection: "users", timestamps: true });
 
 // Creating the user model
