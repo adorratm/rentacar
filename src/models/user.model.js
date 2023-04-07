@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
             trim: true
         },
         time: {
-            type: Date,
+            type: String,
             default: null,
             trim: true
         }

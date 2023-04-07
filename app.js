@@ -46,6 +46,12 @@ const hpp = require('hpp');
 // Api Rate Limiter
 const apiLimiter = require("./src/middlewares/rateLimit");
 
+// Moment
+const moment = require('moment-timezone');
+
+// Set default timezone
+moment.tz.setDefault("Europe/Istanbul");
+
 // Path
 const path = require('path');
 

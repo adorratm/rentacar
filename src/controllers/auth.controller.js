@@ -17,7 +17,7 @@ const APIError = require('../utils/errors');
 const Response = require('../utils/response');
 
 // Importing the auth middleware
-const { createToken } = require('../middlewares/auth');
+const { createToken, createTemporaryToken, decodedTemporaryToken } = require('../middlewares/auth');
 
 // Importing the crypto module
 const crypto = require("crypto");
@@ -121,5 +121,53 @@ const forgotPassword = async (req, res) => {
     return new Response(true, "Password reset code sent successfully.").success(res);
 }
 
+// Reset Code Check Method
+const resetCodeCheck = async (req, res) => {
+    // Getting the email and code from the request body
+    const { email, code } = req.body;
+
+    // Checking if the user exists
+    const userCheck = await user.findOne({ email }).select("_id first_name last_name email reset");
+
+    // If the user doesn't exist, throw an error
+    if (!userCheck) {
+        throw new APIError("User doesn't exist.", 400);
+    }
+
+    // Checking if the code is correct
+    if (userCheck.reset.code !== code) {
+        throw new APIError("Code is incorrect.", 400);
+    }
+
+    // Checking if the code is expired
+    if (moment(new Date()).isAfter(userCheck.reset.time)) {
+        throw new APIError("Code is expired.", 400);
+    }
+
+    // Creating the token
+    const temporaryToken = await createTemporaryToken(userCheck._id, userCheck.email);
+
+    // Returning the response
+    return new Response({ temporaryToken }, "Code is correct.").success(res);
+}
+
+// Reset Password Method
+const resetPassword = async (req, res) => {
+    // Getting the password and temporaryToken from the request body
+    const { password, temporaryToken } = req.body;
+
+    // Checking if the code is correct
+    const decodedToken = await decodedTemporaryToken(temporaryToken);
+
+    // Hashing the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Updating the user
+    await user.findByIdAndUpdate({ _id: decodedToken._id }, { password: hashedPassword, reset: { code: null, time: null } });
+
+    // Returning the response
+    return new Response(decodedToken, "Password reset successfully.").success(res);
+}
+
 // Exporting the methods
-module.exports = { login, register, me, forgotPassword }
+module.exports = { login, register, me, forgotPassword, resetCodeCheck, resetPassword }

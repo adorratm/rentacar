@@ -50,7 +50,7 @@ const tokenCheck = async (req, res, next) => {
     }
     // Checking if the token is valid
     await jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, decoded) => {
-        
+
         // If the token is invalid, throw an error
         if (err) {
             throw new APIError('Access denied. Api token is unauthorized.', 401);
@@ -66,14 +66,64 @@ const tokenCheck = async (req, res, next) => {
 
         // Setting the user info
         req.user = userInfo;
-        
+
         // Calling the next middleware
         next();
+    });
+}
+
+// Creating the temporary token
+const createTemporaryToken = async (userId, email) => {
+
+    // Creating the payload
+    const payload = {
+        sub: userId,
+        email
+    };
+
+    // Creating the token
+    const token = await jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+        algorithm: 'HS512', // Algorithm used to sign the token
+        expiresIn: process.env.JWT_TEMPORARY_EXPIRES_IN // 15 minutes
+    });
+
+    // Returning the token
+    return "Bearer " + token;
+}
+
+// Decoding the temporary token 
+const decodedTemporaryToken = async (temporaryToken) => {
+    const token = temporaryToken && temporaryToken.startsWith('Bearer ') && temporaryToken.split(' ')[1];
+
+    // Checking if the token exists
+    if (!token) {
+        throw new APIError('Access denied. No token provided.', 401);
+    }
+
+    // Checking if the token is valid
+    await jwt.verify(token, process.env.JWT_TEMPORARY_SECRET_KEY, async (err, decoded) => {
+
+        // If the token is invalid, throw an error
+        if (err) {
+            throw new APIError('Access denied. Api token is unauthorized.', 401);
+        }
+
+        const userInfo = await user.findById(decoded.sub).select("_id first_name last_name email");
+
+        // Checking if the user exists
+        if (!userInfo) {
+            throw new APIError('Access denied. User not found.', 401);
+        }
+
+        // Returning the user info
+        return userInfo;
     });
 }
 
 // Exporting the module
 module.exports = {
     createToken,
-    tokenCheck
+    createTemporaryToken,
+    tokenCheck,
+    decodedTemporaryToken
 }
